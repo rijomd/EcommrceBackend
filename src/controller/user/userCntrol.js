@@ -24,7 +24,7 @@ async function userSignUp(req, res) {
     query.status = 1;
     query.role = query.role;
     if (query.role === 1) {
-        query.activation_status =1;
+        query.activation_status = 1;
     }
 
     query.createdtime = new Date().getTime();
@@ -230,7 +230,6 @@ async function addUser(req, res) {
 
 
 
-
 module.exports = {
-    userSignUp, userLogin, activate, addUser, userList,
+    userSignUp, userLogin, activate, addUser, userList, 
 };

@@ -1,6 +1,7 @@
 "use strict";
 const MISC = require("./miscService.js");
 const Productvarient = require("../model").Product_varient;
+const Products = require("../model").Products;
 const log4js = require("log4js");
 const logger = log4js.getLogger();
 logger.level = "debug";
@@ -35,7 +36,7 @@ async function addProductvarients(_id, varientsArray) {
 }
 
 const getvarientList = async (query) => {
-    logger.debug("add getvarientList Service", query);
+    logger.debug(" getvarientList Service", query);
 
     let newquery = {};
     for (let key in query) {
@@ -57,6 +58,12 @@ const getvarientList = async (query) => {
     if (!query.pageVo.pageNo) {
         query.pageVo.noOfItems = 1
     }
+    //for varient listing in website
+    if (query.productarray) {
+        newquery.product = { $in: query.productarray }
+        delete query.productarray;
+        delete newquery.productarray;
+    }
     try {
         console.log("newquery", newquery);
         let conditions = { page: query.pageVo.pageNo, limit: query.pageVo.noOfItems, lean: true, populate: "product", sort: [['varient_name', 'asc']] };
@@ -64,7 +71,7 @@ const getvarientList = async (query) => {
         return MISC.response(0, process.env.COMPLETED, data);
     }
     catch (err) {
-        logger.info(err, "errr")
+        logger.info(err, "errr");
         let err_response = MISC.response(
             -11,
             process.env.ERROR,
@@ -163,6 +170,35 @@ const deleteVarientFromProduct = async (ProductsData) => {
 
 }
 
+const getvarientByProduct = async (data) => {
+    logger.info(" getvarientByProduct ", data);
+    let fullproductData;
+    try {
+        let varient = await Productvarient.findOne({ _id: data._id });
+        if (varient && varient.product) {
+            let varientsDataArray = await Productvarient.find({ product: varient.product });
+            let productData = await Products.find({ _id: varient.product });
+
+            if (varientsDataArray && productData && productData.length > 0) {
+                 fullproductData = {
+                    varients: varientsDataArray,
+                    product: productData[0]
+                }
+            }
+        }
+        return fullproductData;
+    } catch (error) {
+        logger.info(error, "error")
+        let err_response = MISC.response(
+            -11,
+            process.env.ERROR,
+            "");
+        throw MISC.response(-11, process.env.ERROR, err_response);
+    }
+
+}
+
+
 module.exports = {
-    addProductvarients, getvarientList, deleteVarient, varientsEdit, multivarientsEdit, deleteVarientFromProduct
+    addProductvarients, getvarientList, deleteVarient, varientsEdit, multivarientsEdit, deleteVarientFromProduct, getvarientByProduct
 }
