@@ -12,7 +12,7 @@ let CartSchema = mongoose.Schema({
     },
     product_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
+        ref: "Product_varient",
     },
 
 });

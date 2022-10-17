@@ -1,5 +1,7 @@
 "use strict";
 const CartService = require("../../service/cartService");
+const userService = require("../../service/userService");
+
 const log4js = require("log4js");
 const logger = log4js.getLogger();
 logger.level = "debug";
@@ -29,6 +31,12 @@ async function addCart(req, res) {
             query.createdtime = new Date().getTime();
             response = await CartService.addCart(query);
         }
+        let newquery = {
+            _id: req.user._id,
+            priceObj: query.priceObj
+        }
+        await userService.saveOrUdpateUser(newquery);
+
         res.status(200).json({
             error_code: 0,
             message: process.env.SUCCESS,

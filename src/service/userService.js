@@ -17,7 +17,7 @@ async function userSign(query) {
             }
         }
 
-        if (UserNew.phone && UserNew.name) {
+        if (UserNew.phone ) {
 
             console.log(UserNew, "////");
             let savedData = await User.findOne({ phone: UserNew.phone, status: 1, role: query.role });
