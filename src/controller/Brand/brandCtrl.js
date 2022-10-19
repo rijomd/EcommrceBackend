@@ -1,5 +1,5 @@
 "use strict";
-const BrandService = require("../../service/BrandService");
+const BrandService = require("../../service/brandService");
 const categoryService = require("../../service/categoryService");
 const log4js = require("log4js");
 const logger = log4js.getLogger();
