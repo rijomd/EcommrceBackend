@@ -1,25 +1,25 @@
 "use strict";
 const MISC = require("./miscService.js");
-const Cart = require("../model").Cart;
+const Order = require("../model").Order;
 const log4js = require("log4js");
 const logger = log4js.getLogger();
 logger.level = "debug";
 var mongoose = require('mongoose');
 
-async function addCart(querys) {
+async function addOrder(querys) {
     let query = JSON.parse(JSON.stringify(querys));
-    logger.debug("Enter Add Cart Service", query);
+    logger.debug("Enter Add Order Service", query);
 
-    let CartNew = new Cart();
+    let OrderNew = new Order();
     for (let prop in query) {
         if (query.hasOwnProperty(prop)) {
-            CartNew[prop] = query[prop];
+            OrderNew[prop] = query[prop];
         }
     }
 
-    if (CartNew.product_id) {
+    if (OrderNew.user_id) {
         try {
-            let data = await CartNew.save();
+            let data = await OrderNew.save();
             return MISC.response(0, process.env.SUCCESS, data);
         } catch (err) {
             logger.info(err, "errror")
@@ -27,14 +27,14 @@ async function addCart(querys) {
             throw MISC.response(-11, process.env.ERROR, err_response);
         }
     } else {
-        throw MISC.response(-11, process.env.ERROR, {});
+        throw MISC.response(-11, "Incomplete form", {});
     }
-
 }
 
-async function getCart(querys) {
+
+async function getOrderList(querys) {
     let query = JSON.parse(JSON.stringify(querys));
-    logger.debug("Enter getCart Service", query);
+    logger.debug("Enter getOrderList Service", query);
 
     let newquery = {};
     for (let key in query) {
@@ -59,14 +59,16 @@ async function getCart(querys) {
     if (!query.pageVo.pageNo) {
         query.pageVo.noOfItems = 1
     }
-
-
-
+    if (query.searchKey) {
+        newquery.$or = [{ name: { $regex: ".*" + query.searchKey + ".*", "$options": "i" } }];
+        delete query.searchKey;
+        delete newquery.searchKey;
+    }
     logger.info(newquery, "newquery")
     try {
-        let data = await Cart.paginate(
+        let data = await Order.paginate(
             newquery,
-            { page: query.pageVo.pageNo, limit: query.pageVo.noOfItems, lean: true, populate: ["user_id", "product_id"] });
+            { page: query.pageVo.pageNo, limit: query.pageVo.noOfItems, lean: true, populate: ["user_id", "product_varient"]});
         return MISC.response(0, process.env.SUCCESS, data);
     } catch (err) {
         logger.info(err, "err")
@@ -77,22 +79,12 @@ async function getCart(querys) {
 }
 
 
-async function deleteCart(CartData) {
-    logger.info(" deleteCart service", CartData);
-    let _id = mongoose.Types.ObjectId(CartData._id);
-    let returndata;
-
+async function deleteOrder(Orderdata) {
+    logger.info(" deleteOrder service", Orderdata);
+    let _id = mongoose.Types.ObjectId(Orderdata.Order_id);
     try {
-        if (CartData.multi) {
-            for(let item of CartData.carts){
-                await Cart.remove({ _id: item }).exec();
-            }
-        }
-        else {
-            await Cart.remove({ _id: _id }).exec();
-        }
-        returndata = await getCart({ user_id: CartData.user_id, status: 1 });
-        return returndata;
+        let data = await Order.remove({ _id: _id }).exec();
+        return MISC.response(0, process.env.COMPLETED, data);
     } catch (error) {
         logger.info(error, "error")
         let err_response = MISC.response(
@@ -104,15 +96,11 @@ async function deleteCart(CartData) {
 
 }
 
-const updateCart = async (cartdata) => {
-    console.log("update cartdata service", cartdata);
-    let returndata;
+async function updateOrder(Orderdata) {
+    console.log("updateOrder service");
     try {
-        let data = await Cart.findByIdAndUpdate(cartdata._id, cartdata);
-        if (data) {
-            returndata = await getCart({ user_id: cartdata.user_id, status: 1 });
-        }
-        return returndata;
+        let data = await Order.findByIdAndUpdate(Orderdata._id, Orderdata);
+        return MISC.response(0, process.env.SUCCESS, data);
     } catch (error) {
         logger.info(error)
         throw MISC.response(-11, process.env.ALREADY_EXIST, {});
@@ -120,8 +108,9 @@ const updateCart = async (cartdata) => {
 }
 
 module.exports = {
-    addCart,
-    getCart,
-    deleteCart, updateCart
+    addOrder,
+    getOrderList,
+    deleteOrder,
+    updateOrder,
 };
 

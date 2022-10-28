@@ -13,6 +13,7 @@ Schema.Producthome = require('./producthome');
 Schema.Product_atributes = require('./product_atributes');
 Schema.Product_varient = require('./product_varient');
 Schema.Offer = require('./offer');
+Schema.Order = require('./order');
 Schema.OfferItem = require('./offerItem');
 
 module.exports = Schema; 

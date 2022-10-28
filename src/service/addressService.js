@@ -22,7 +22,7 @@ async function addAddress(querys) {
         try {
             let data = await AddressNew.save();
             if (data) {
-                returndata = await getAddress(AddressNew.user_id);
+                returndata = await getAddress({_id:AddressNew.user_id});
             }
             return MISC.response(0, process.env.SUCCESS, returndata);
         } catch (err) {

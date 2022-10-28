@@ -47,6 +47,11 @@ router.use(ProducattributesRouter);
 let OfferRouter = require("../router/offerRouter");
 router.use(OfferRouter);
 
+
+//order
+let OrderRouter = require("../router/orderRouter");
+router.use(OrderRouter);
+
 module.exports = router
 
 
