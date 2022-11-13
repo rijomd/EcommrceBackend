@@ -4,10 +4,20 @@ const CartService = require("../../service/cartService");
 const log4js = require("log4js");
 const logger = log4js.getLogger();
 logger.level = "debug";
+const Razorpay = require('razorpay');
 
 async function addOrder(req, res) {
     let query = req.body;
     logger.debug("add addOrder Ctrl", query);
+
+    let razorpay = {};
+    if (orderId) {
+        razorpay.paymentId = query.razorpay_payment_id;
+        razorpay.orderId = query.razorpay_order_id;
+        razorpay.signature = query.razorpay_signature;
+        query.paid_status = true;
+        query.cod_delivery = false;
+    }
 
     try {
         let response;
@@ -86,7 +96,65 @@ async function getOrderList(req, res) {
 }
 
 
+const createOrder = async (req, res) => {
+    let query = req.body;
+    logger.info("createOrder ctrl", query);
+
+    try {
+        var instance = new Razorpay({
+            key_id: process.env.KEY_ID,
+            key_secret: process.env.KEY_SECRET,
+        });
+
+        const option = {
+            currency: "INR",
+            amount: query.total_price
+        }
+
+        instance.orders.create(option, (err, order) => {
+            if (err) {
+                logger.info(err, "err instance");
+            }
+            else {
+                res.status(200).json(
+                    order
+                )
+            }
+            console.log(order);
+        });
+
+    }
+    catch (err) {
+        logger.info(err, "error");
+        res.status(200).json(
+            {
+                error_code: 11,
+                message: "createOrder Unsuccess",
+                data: {}
+            }
+        )
+    }
+}
+
+const razorpayKey = async (req, res) => {
+    logger.info(razorpayKey, "razorpayKey");
+    try {
+        res.status(200).json(
+            { key: process.env.KEY_ID }
+        )
+    }
+    catch (err) {
+        logger.info(err, "error");
+        res.status(200).json(
+            {
+                error_code: 11,
+                message: "Something wrong",
+                data: {}
+            }
+        )
+    }
+}
 
 module.exports = {
-    addOrder, getOrderList
+    addOrder, getOrderList, createOrder, razorpayKey
 }

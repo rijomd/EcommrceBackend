@@ -17,6 +17,11 @@ let OrderSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Address",
     },
+    razorpay: {
+        orderId: String,
+        paymentId: String,
+        signature: String
+    },
     order_status: { type: Boolean },
     paid_status: { type: Boolean },
     cod_delivery: { type: Boolean },
